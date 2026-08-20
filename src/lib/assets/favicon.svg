@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+	<!-- Slate body -->
+	<rect x="2" y="12" width="28" height="17.5" rx="2.5" fill="#fbbf24" />
+	<g fill="#020617" opacity="0.22">
+		<rect x="6" y="17.5" width="13" height="2" rx="1" />
+		<rect x="6" y="22.5" width="19" height="2" rx="1" />
+	</g>
+	<!-- Hinged clapper stick, striped -->
+	<g transform="rotate(-9 4 12)">
+		<clipPath id="stick">
+			<rect x="2" y="4.5" width="28" height="7.5" rx="1.5" />
+		</clipPath>
+		<rect x="2" y="4.5" width="28" height="7.5" rx="1.5" fill="#fbbf24" />
+		<g clip-path="url(#stick)" fill="#020617">
+			<path d="M2.5 12 7 4.5h4L6.5 12Z" />
+			<path d="M11.5 12 16 4.5h4L15.5 12Z" />
+			<path d="M20.5 12 25 4.5h4L24.5 12Z" />
+		</g>
+	</g>
+</svg>
