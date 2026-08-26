@@ -77,6 +77,48 @@ The API has generous limits, but nothing here hits it more than it has to:
 - Posters and headshots come from TMDB's image CDN (`image.tmdb.org`), which doesn't count
   against the API at all.
 
+## Auth
+
+The whole site sits behind a two-step film-trivia gate ([hooks.server.ts](src/hooks.server.ts)):
+you get a title with a colour and a noun blanked out, pick the colour from a swatch grid,
+then the noun from a symbol grid. `The Hunt for ___ ___` wants **Red**, then **October**.
+
+**Adding a puzzle is one entry** in `PUZZLES` in
+[src/lib/server/puzzles.ts](src/lib/server/puzzles.ts):
+
+```ts
+{ id: 'red-dragon', prompt: 'Hannibal, pre-Hopkins: ___ ___', colour: 'red', word: 'Dragon', symbol: '🐉' }
+```
+
+Nothing else needs touching. The word and its symbol join the step-two grid automatically,
+which also makes every new entry a decoy for all the others. `colour` is typed against the
+`COLOURS` palette, so a typo is a compile error rather than a blank swatch.
+
+Write prompts that identify the film from what's left — `The ___ ___` could be half a dozen
+titles, whereas `Hanks on death row: The ___ ___` only goes one way.
+
+### What protects what
+
+- **Answers never leave the server.** The puzzle table lives under `$lib/server`, and the
+  page is sent only the prompt plus the two option grids. Those grids are identical for
+  every puzzle, so they give nothing away either.
+- **Both cookies are HMAC-signed** ([session.ts](src/lib/server/session.ts)). The session
+  cookie has to be, or anyone could set `site_auth=authenticated` by hand. The attempt
+  cookie has to be, or step one could be skipped by editing the phase — and it stores the
+  puzzle's *index* rather than its id, because `auth_attempt=yellow-submarine:1` would be
+  visible in devtools and would give away the answer.
+- **A wrong answer deals a new puzzle**, so options can't be eliminated one at a time.
+- **Three wrong answers locks the IP for 10 minutes** ([authLimiter.ts](src/lib/server/authLimiter.ts)).
+  A correct answer during a lockout is still refused.
+- `/api/search` and `/api/compare` return **401** rather than redirecting — they spend the
+  TMDB key, so sealing them is the real point of the gate.
+
+Set `AUTH_SECRET` in `.env` on the server (`openssl rand -hex 32`). Without it a random
+secret is generated per process, which is safe but signs everyone out on every restart.
+
+This is a soft gate: anyone who knows the films can walk through it, by design. It keeps
+bots and randoms off the TMDB key — it is not a login.
+
 ## Attribution
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.
