@@ -5,13 +5,14 @@
  * ecosystem.config.js is treated as an ES module, `module.exports` quietly goes
  * nowhere, and PM2 reads an empty config and reports no apps to start.
  */
-const os = require('node:os');
 const path = require('node:path');
 
-// PM2 does not expand `~`, and the username differs between AMIs (ubuntu on
-// Ubuntu, ec2-user on Amazon Linux), so resolve the home directory instead of
-// hardcoding either.
-const appDir = path.join(os.homedir(), 'actor-search');
+// This file lives in the project root, so anchor everything to its own
+// location. That works wherever the app is checked out (/home/apps/actor-search,
+// ~/actor-search, ...) and whichever user runs `pm2 start`. PM2 does not expand
+// `~`, and the home directory of the pm2 user is not necessarily where the app
+// lives, so don't derive the path from either.
+const appDir = __dirname;
 
 module.exports = {
 	apps: [
